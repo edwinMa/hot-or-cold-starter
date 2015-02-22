@@ -3,6 +3,7 @@ $(document).ready(function(){
 
 	var COMPUTER_CHOICE = null;
 	var NUM_GUESSES = null;
+	var GAME_OVER = false;
 
 	
 	/*--- Display information modal box ---*/
@@ -19,9 +20,24 @@ $(document).ready(function(){
   	/*
     ** guess button pressed; get guess from text field
     */
-    $("#guessButton").click(function(){
+    $("#guessButton").click(function(event){
+
+    	// call preventDefault method so the onload method is not called again
+    	// Thanks Daniel!!
+    	event.preventDefault();
 
     	console.log("guess button down");
+
+    	if (null === COMPUTER_CHOICE)
+    	{
+    		alert ("Please press new game button to get started"); 
+    		return; 
+    	}
+
+    	if (GAME_OVER)
+    	{
+    		startNewGame();
+    	}
     	
     	var guess = $('#userGuess').val();
     	
@@ -30,13 +46,19 @@ $(document).ready(function(){
     	{
     		NUM_GUESSES++; 
     		
-    		$("#count").val("10");
+    		$("#count").text(NUM_GUESSES);
+
+    		console.log("num guess is " + NUM_GUESSES);
     		console.log("guess is " + guess);
+
+    		// add guess to guess list
+    		$("#guessList").append("<li>" + guess + "</li>");
+
     		compareGuess (guess);
     	}
     	else
     	{
-    		console.log ("invalid guess"); 
+    		alert("invalid guess. Please enter a whole number betwee 1 and 100"); 
     	}
     	
 	});
@@ -53,7 +75,7 @@ $(document).ready(function(){
 	});
 
 	/*
-	** get random computer guess
+	** get computer's choice at random
 	*/
 	function randomComputerChoice ()
 	{
@@ -67,34 +89,47 @@ $(document).ready(function(){
 	*/
 	function compareGuess(guess)
 	{
-		console.log ("entering checkGuess w/ guess: " + guess + " computer choice is " + COMPUTER_CHOICE); 
+		console.log ("entering checkGuess");
+		console.log ("guess number: " + NUM_GUESSES + " guess: " + guess + " computer choice is " + COMPUTER_CHOICE); 
 
-		var diff = COMPUTER_CHOICE - guess;
+		// get the absolute value difference between the user's guess and computer's random choice
+		var diff = Math.abs(COMPUTER_CHOICE - guess);
+
+		var feedback = null;
+
 		if (0 === diff)
 		{
-			console.log ("CORRECT!"); 
+			feedback = guess + " is CORRECT! You got it on " + NUM_GUESSES + " guesses."; 
+			GAME_OVER = true;
+		}
+		else if (diff < 5)
+		{
+			feedback = "You are VERY HOT";
 		}
 		else if (diff < 10)
 		{
-			console.log ("hot: " + diff); 
+			feedback = "You are HOT";
 		}
 		else if (diff < 20)
 		{
-			console.log ("warm: " + diff);
+			feedback = "You are Warm";
 		}
 		else if (diff < 30)
 		{
-			console.log ("cool: " + diff);
+			feedback = "You are cool";
 		}
 		else if (diff < 40)
 		{
-			console.log ("cold: " + diff);
+			feedback = "You are cold";
 		}
-		else
+		else 
 		{
-			console.log ("very cold: " + diff);
-
+			feedback = "You are ICE COLD";
 		}
+		
+		console.log (feedback); 
+		// alert (feedback);
+		$("#feedback").text(feedback);
 
 
 	}
@@ -108,8 +143,27 @@ $(document).ready(function(){
 		console.log ("starting new game; computer choice is: " + COMPUTER_CHOICE); 
 
 		NUM_GUESSES = 0; 
+		GAME_OVER = false;
+
+		$("#count").text(NUM_GUESSES);
+		$("#feedback").text("Make your guess!");
+
+		$("#userGuess").val("Enter your guess!");
+
+		// clear previous game guess list if any
+		$("ul.guessBox li").remove();
 
 	}
+
+	/*
+    ** clear text entry to get reay for new user guess
+    */
+    $('#userGuess').mouseenter(function() {
+
+    	console.log ("user guess mouse enter");
+    	$("#userGuess").val("");
+    	
+	});
 
 
 });
